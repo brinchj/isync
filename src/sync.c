@@ -251,7 +251,7 @@ sync_old( int tops, store_t *sctx, store_t *tctx, store_conf_t *tconf, FILE *jfp
 {
 	driver_t *tdriver = tctx->conf->driver, *sdriver = sctx->conf->driver;
 	int uid, tuid, unex;
-	unsigned char sflags, aflags, dflags, rflags;
+	unsigned char sflags, aflags, dflags;
 	msg_data_t msgdata;
 
 	/* excludes (push) c.3) d.2) d.3) d.4) / (pull) b.3) d.7) d.8) d.9) */
@@ -332,20 +332,18 @@ sync_old( int tops, store_t *sctx, store_t *tctx, store_conf_t *tconf, FILE *jfp
 			unex = 0;
 			if (srec->status & S_EXPIRED) {
 				if (!pull) {
-					if (sflags & F_DELETED) {
-						if (!(sflags & F_FLAGGED))
-							aflags &= ~F_DELETED;
-					} else
-						unex = 1;
+					if ((aflags & ~F_DELETED) || dflags)
+						info( "Info: Flags of expired message changed in (%d,%d)\n", srec->muid, srec->suid );
+					return SYNC_OK;
 				} else {
 					if ((sflags & F_FLAGGED) && !(sflags & F_DELETED)) {
 						unex = 1;
 						dflags |= F_DELETED;
-					}
+					} else
+						return SYNC_OK;
 				}
 			}
-			rflags = (*nflags | aflags) & ~dflags;
-			if ((tops & OP_EXPUNGE) && (rflags & F_DELETED) &&
+			if ((tops & OP_EXPUNGE) && (sflags & F_DELETED) &&
 			    (!tctx->conf->trash || tctx->conf->trash_only_new))
 			{
 				aflags &= F_DELETED;
@@ -356,7 +354,7 @@ sync_old( int tops, store_t *sctx, store_t *tctx, store_conf_t *tconf, FILE *jfp
 			case DRV_BOX_BAD: return SYNC_FAIL;
 			default: /* ok */ break;
 			case DRV_OK:
-				*nflags = rflags;
+				*nflags = (*nflags | aflags) & ~dflags;
 				if (unex) {
 					debug( "unexpiring pair(%d,%d)\n", srec->muid, srec->suid );
 					/* log last, so deletion can't be misinterpreted! */
