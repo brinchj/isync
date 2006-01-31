@@ -697,7 +697,7 @@ sync_boxes( store_t *mctx, const char *mname,
 	} else
 		maxwuid = 0;
 	info( "Selecting slave %s... ", sname );
-	debug( "selecting slave [1,%d]\n", maxwuid );
+	debug( maxwuid == INT_MAX ? "selecting slave [1,inf]\n" : "selecting slave [1,%d]\n", maxwuid );
 	switch (sdriver->select( sctx, (sctx->opts & OPEN_OLD) ? 1 : smaxuid + 1, maxwuid, 0, 0 )) {
 	case DRV_STORE_BAD: ret = SYNC_SLAVE_BAD; goto bail;
 	case DRV_BOX_BAD: ret = SYNC_FAIL; goto bail;
@@ -800,7 +800,7 @@ sync_boxes( store_t *mctx, const char *mname,
 	} else
 		maxwuid = 0;
 	info( "Selecting master %s... ", mname );
-	debug( "selecting master [%d,%d]\n", minwuid, maxwuid );
+	debug( maxwuid == INT_MAX ? "selecting master [%d,inf]\n" : "selecting master [%d,%d]\n", minwuid, maxwuid );
 	switch (mdriver->select( mctx, minwuid, maxwuid, mexcs, nmexcs )) {
 	case DRV_STORE_BAD: ret = SYNC_MASTER_BAD; goto finish;
 	case DRV_BOX_BAD: ret = SYNC_FAIL; goto finish;
