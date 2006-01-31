@@ -1,3 +1,99 @@
+2006-01-31 16:45  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* configure.in:
+
+	bump version
+
+2006-01-31 16:21  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* Makefile.am:
+
+	backport: deal with branches in "make log"
+
+2006-01-31 16:17  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/compat/main.c:
+
+	backport: fix 'isync -w' writing .mbsyncrc to a wrong directory
+
+2006-01-31 16:16  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/sync.c:
+
+	backport: less confusing uid ranges in debug
+
+2006-01-31 16:15  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* configure.in, src/drv_imap.c:
+
+	backport: compile fixes
+
+2006-01-31 16:12  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/sync.c:
+
+	backport:
+	- sanitize flag handling of expired messages
+	- don't record we synced flags if we didn't
+	- remove now superfluous temporary rflags
+
+2006-01-31 15:25  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/util.c:
+
+	backport: flush debug output
+
+2005-12-22 15:59  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/sync.c:
+
+	fix sync entries not being purged due to c&p error.
+
+2005-12-21 14:04  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/drv_maildir.c:
+
+	less confusing error message on invalid mailbox.
+
+2005-12-18 15:10  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/config.c:
+
+	it's beyond me what this memset was supposed to do ...
+
+2005-12-18 14:41  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/: config.c, main.c:
+
+	trailing whitespace
+
+2005-12-17 14:47  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/drv_imap.c:
+
+	revert 1.8 - what was i smoking?! the CREATE argument is already quoted;
+	we just extracted it from the previous command.
+
+2005-09-29 23:07  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/drv_maildir.c:
+
+	make flag changes unset "new" status - unless a ghost is acting in the
+	background, a flag change indicates that the message was at least
+	noticed.
+
+2005-09-29 23:05  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/sync.c:
+
+	don't call the driver's set_flags() if the flags did not change at all.
+
+2005-09-21 18:14  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/drv_imap.c:
+
+	64-bit cleanness
+
 2005-03-28 12:43  Oswald Buddenhagen <ossi@users.sf.net>
 
 	* src/drv_imap.c:
@@ -212,18 +308,6 @@
 
 	excessively secure temp file creation.
 	more user friendliness.
-
-2004-03-23 16:52  Oswald Buddenhagen <ossi@users.sf.net>
-
-	* src/sync.c:
-
-	be cygwin-compliant: don't use link()
-
-2004-03-22 17:51  Oswald Buddenhagen <ossi@users.sf.net>
-
-	* src/sync.c:
-
-	unscrew file naming scheme
 
 2004-02-07 16:36  Oswald Buddenhagen <ossi@users.sf.net>
 
@@ -1066,12 +1150,6 @@
 
 	added -a (--all) flag to synchronize all mailboxes defined in ~/.isyncrc
 
-2001-06-12 02:32  Michael Elkins <me@sigpipe.org>
-
-	* AUTHORS, README, COPYING, Makefile.am, configure.in, src/main.c:
-
-	initial import
-
 2001-02-28 02:02  Michael Elkins <me@sigpipe.org>
 
 	* src/: config.c, imap.c:
@@ -1434,12 +1512,4 @@
 	  isyncrc.sample:
 
 	Initial revision
-
-2000-12-20 22:41  Michael Elkins <me@sigpipe.org>
-
-	* AUTHORS, Makefile.am, README, configure.in, src/isync.h,
-	  src/main.c, src/imap.c, src/maildir.c, src/sync.c, isync.1,
-	  isyncrc.sample:
-
-	initial import
 
