@@ -31,11 +31,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stddef.h>
+#include <limits.h>
 #include <errno.h>
 #include <string.h>
 #include <ctype.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
+#ifdef HAVE_SYS_FILIO_H
+# include <sys/filio.h>
+#endif
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
