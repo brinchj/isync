@@ -250,6 +250,7 @@ write_imap_server( FILE *fp, config_t *cfg )
 		         cfg->server_name, cfg->tunnel );
 	} else {
 		if (sscanf( cfg->host, "%d.%d.%d.%d", &a1, &a2, &a3, &a4 ) == 4)
+			/* XXX this does not avoid clashes. add port? */
 			cfg->server_name = nfstrdup( cfg->host );
 		else {
 			p = strrchr( cfg->host, '.' );
@@ -350,7 +351,8 @@ write_config( int fd )
 
 	fprintf( fp, "SyncState *\n\n" );
 	if (local_home || o2o)
-		fprintf( fp, "MaildirStore local\nPath \"%s/\"\nAltMap %s\n\n", maildir, tb( altmap > 0 ) );
+		fprintf( fp, "MaildirStore local\nPath \"%s/\"\nInbox \"%s/INBOX\"\nAltMap %s\n\n",
+		         maildir, maildir, tb( altmap > 0 ) );
 	if (local_root)
 		fprintf( fp, "MaildirStore local_root\nPath /\nAltMap %s\n\n", tb( altmap > 0 ) );
 	if (o2o) {
