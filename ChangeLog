@@ -1,3 +1,62 @@
+2006-11-03 14:05  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* Makefile.am:
+
+	add target for creating signed package
+
+2006-11-01 08:19  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/: drv_imap.c, mbsync.1:
+
+	backport:
+	- un-document "Host imaps:[...]" syntax and introduce new option UseIMAPS
+	  instead
+	- apply ted's patch to support UseIMAPS in conjunction with Tunnel
+	- document that SSLv2 is No Good (TM)
+
+2006-11-01 08:14  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/drv_imap.c:
+
+	backport: move assigning default port to the place of use
+
+2006-11-01 07:33  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* configure.in:
+
+	bump version
+
+2006-11-01 07:20  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/compat/config.c:
+
+	backport: put INBOX in Maildir
+
+2006-10-24 19:39  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/drv_maildir.c:
+
+	backport: don't crash on truncating db
+
+2006-07-31 07:31  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/drv_maildir.c:
+
+	another attempt at working around glibc breakage.
+
+2006-07-29 13:52  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/: drv_maildir.c, mdconvert.c:
+
+	work around glibc bug: printf("%.*s", INT_MAX, s) tries to allocate 2G.
+
+2006-03-19 11:44  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/drv_imap.c:
+
+	make config parsing more robust against bogus input and report errors
+	more clearly.
+
 2006-01-31 16:45  Oswald Buddenhagen <ossi@users.sf.net>
 
 	* configure.in:
