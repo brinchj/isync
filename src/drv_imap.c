@@ -865,7 +865,9 @@ parse_search( imap_t *imap, char *cmd )
 	int uid;
 
 	arg = next_arg( &cmd );
-	if (!arg || !(uid = atoi( arg ))) {
+	if (!arg)
+		return;
+	if (!(uid = atoi( arg ))) {
 		fprintf( stderr, "IMAP error: malformed SEARCH response\n" );
 		return;
 	}
