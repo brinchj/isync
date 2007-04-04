@@ -711,10 +711,11 @@ sync_boxes( store_t *mctx, const char *mname,
 		goto bail;
 	}
 
-	s = strrchr( dname, '/' );
-	*s = 0;
-	mkdir( dname, 0700 );
-	*s = '/';
+	if ((s = strrchr( dname, '/' ))) {
+		*s = 0;
+		mkdir( dname, 0700 );
+		*s = '/';
+	}
 	if (lfd < 0) {
 		if ((lfd = open( lname, O_WRONLY|O_CREAT, 0666 )) < 0)
 			goto lferr;
