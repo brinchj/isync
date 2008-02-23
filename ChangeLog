@@ -1,3 +1,66 @@
+2008-02-23 10:38  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/compat/config.c:
+
+	backport: quote user name in generated config.
+
+2008-02-23 10:22  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/main.c:
+
+	backport: don't overlook 2nd and later single-letter options in last
+	argument.
+
+2008-02-23 10:03  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/: drv_maildir.c, mdconvert.c, compat/convert.c:
+
+	backport: put pointers to bdb open() into parentheses, so they won't be
+	macro-expanded as libc open.
+
+2007-09-22 10:49  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/drv_imap.c:
+
+	backport: don't use #ifdef inside htons() arguments - it can be a macro.
+
+2007-04-04 19:55  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/sync.c:
+
+	avoid crash in case of a rather weird (==misconfigured?) sync state
+	location.
+
+2007-04-04 15:27  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/drv_imap.c:
+
+	accept empty SEARCH IMAP responses - reasonable servers omit them
+	alltogether, but this is allowed, too. patch by
+	CCMAIL: Alexander Gerasiov <gq@cs.msu.su>
+	fixes debian bug #413336
+
+	fixed in HEAD a year ago - accidentally ...
+
+2007-02-10 16:41  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/drv_imap.c:
+
+	backport: fix crash due to uninited var when parsing IMAPServer.
+	-REF: <E1HFuIM-00041h-Nn@sc8-pr-cvs2.sourceforge.net>
+
+2006-11-18 14:17  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/drv_maildir.c:
+
+	backport: reverse-map <Inbox> to INBOX when encountered during listing.
+
+2006-11-09 19:01  Oswald Buddenhagen <ossi@users.sf.net>
+
+	* src/compat/main.c:
+
+	backport: make compat wrapper default to current user for imap login
+
 2006-11-03 14:05  Oswald Buddenhagen <ossi@users.sf.net>
 
 	* Makefile.am:
