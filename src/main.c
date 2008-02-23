@@ -178,8 +178,10 @@ main( int argc, char **argv )
 	}
 	arc4_init();
 
-	for (oind = 1, ochar = 0; oind < argc; ) {
+	for (oind = 1, ochar = 0; ; ) {
 		if (!ochar || !*ochar) {
+			if (oind >= argc)
+				break;
 			if (argv[oind][0] != '-')
 				break;
 			if (argv[oind][1] == '-') {
