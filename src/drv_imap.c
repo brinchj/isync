@@ -62,6 +62,7 @@ typedef struct imap_server_conf {
 	int port;
 	char *user;
 	char *pass;
+    char *authModule;
     char *auth;
 #ifdef HAVE_LIBSSL
 	char *cert_file;
@@ -1817,6 +1818,8 @@ imap_parse_store( conffile_t *cfg, store_conf_t **storep, int *err )
 			server->user = nfstrdup( cfg->val );
 		else if (!strcasecmp( "Pass", cfg->cmd ))
 			server->pass = nfstrdup( cfg->val );
+        else if (!strcasecmp( "AuthModule", cfg->cmd ))
+            server->authModule = nfstrdup( cfg->val );
 		else if (!strcasecmp( "Auth", cfg->cmd ))
 			server->auth = nfstrdup( cfg->val );
 		else if (!strcasecmp( "Port", cfg->cmd ))
