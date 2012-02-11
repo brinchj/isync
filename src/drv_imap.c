@@ -63,7 +63,6 @@ typedef struct imap_server_conf {
 	char *user;
 	char *pass;
     char *authModule;
-    char *auth;
 #ifdef HAVE_LIBSSL
 	char *cert_file;
 	unsigned use_imaps:1;
@@ -161,6 +160,7 @@ enum CAPABILITY {
 	CRAM,
 	STARTTLS,
 #endif
+    OAUTH,
 };
 
 static const char *cap_list[] = {
@@ -172,6 +172,7 @@ static const char *cap_list[] = {
 	"AUTH=CRAM-MD5",
 	"STARTTLS",
 #endif
+    "AUTH=XOAUTH",
 };
 
 #define RESP_OK    0
@@ -1436,6 +1437,87 @@ imap_open_store( store_conf_t *conf,
 			error( "Skipping account %s, no user\n", srvc->name );
 			goto bail;
 		}
+        if(srvc->authModule) {
+          info ("Switching to OAUTH...\n");
+          if(CAP(OAUTH)) {
+            printf( "Calling AUTH module: %s\n", srvc->authModule );
+
+            int fd[2];
+            if(pipe(fd) < 0) {
+              error("pipe failed!");
+              goto bail;
+            }
+
+            pid_t pID = fork();
+            if(pID < 0) {
+              error("fork failed!");
+              goto bail;
+            }
+
+            if(pID == 0) {
+              // child
+              // redirect stdout
+              dup2(fd[1], fileno(stdout));
+              dup2(fd[1], fileno(stderr));
+              close(fd[1]);
+              // execute authmodule to generate oauth token
+              const char **args = { NULL };
+              execv(srvc->authModule, args);
+              fflush(stdout);
+              exit(0);
+            } else {
+              // parent
+              // read oauth token
+              close(fd[1]);
+              int max_size = 4096 + 1;  // plus ending newline
+              char* buf = calloc(1, max_size);
+              if (buf == NULL) {
+                error("calloc failed!");
+                goto bail;
+              }
+              int size = 0;
+              while(size < max_size && ( (read(fd[0], &buf[size], 1) ) > 0) ) {
+                size += 1;
+              }
+              if(size == 0) {
+                error("authModule failed with no answer!");
+                goto bail;
+              }
+              // check return value
+              int status;
+              waitpid(pID, &status, 0);
+              if( WIFEXITED(status) ) {
+                error("authModule exited unexpectedly!");
+              }
+              // verify auth data (base64)
+              int i;
+              for(i = 0; i < size - 1; i++) {
+                char c = buf[i];
+                if ('A' <= c && c <= 'Z') continue;
+                if ('a' <= c && c <= 'z') continue;
+                if ('0' <= c && c <= '9') continue;
+                if ('=' == c || c == '/') continue;
+                error("authModule returned invalid answer: '%c'!\n", c);
+                goto bail;
+              }
+              if(buf[size - 1] != '\n') {
+                error("authModule did not end answer with newline!");
+                goto bail;
+              }
+              // run authentication
+              if (imap_exec( ctx, 0, "AUTHENTICATE XOAUTH %s\n", buf ) != RESP_OK) {
+                error( "IMAP error: XOAUTH authentication failed!" );
+                goto bail;
+              } else {
+                // everything went better than expected!
+                goto final;
+              }
+            }
+          } else {
+            error("Server does not support OAUTH");
+          }
+          goto bail;
+        }
 		if (!srvc->pass) {
 			char prompt[80];
 			sprintf( prompt, "Password (%s): ", srvc->name );
@@ -1820,8 +1902,6 @@ imap_parse_store( conffile_t *cfg, store_conf_t **storep, int *err )
 			server->pass = nfstrdup( cfg->val );
         else if (!strcasecmp( "AuthModule", cfg->cmd ))
             server->authModule = nfstrdup( cfg->val );
-		else if (!strcasecmp( "Auth", cfg->cmd ))
-			server->auth = nfstrdup( cfg->val );
 		else if (!strcasecmp( "Port", cfg->cmd ))
 			server->port = parse_int( cfg );
 #ifdef HAVE_LIBSSL
