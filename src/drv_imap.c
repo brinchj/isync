@@ -1486,8 +1486,9 @@ imap_open_store( store_conf_t *conf,
               // check return value
               int status;
               waitpid(pID, &status, 0);
-              if( WIFEXITED(status) ) {
+              if( !WIFEXITED(status) ) {
                 error("authModule exited unexpectedly!");
+                goto bail;
               }
               // verify auth data (base64)
               int i;
