@@ -137,10 +137,10 @@ int safe_unpack(char *str, char *out, size_t out_len) {
 }
 
 
-#define U_SIZE 1000   // max size of unsafe string
-#define S_SIZE 2000   // max size of safe string
+#define U_SIZE 1000           // max size of unsafe string
+#define S_SIZE (U_SIZE * 3)   // max size of safe string
 
-int main() {
+int test() {
   char *unsafe = calloc(1, U_SIZE + 1);
   char *safe   = calloc(1, S_SIZE + 1);
 
@@ -158,12 +158,12 @@ int main() {
   unsafe[U_SIZE + 1] = 0;
 
   if(safe_pack(unsafe, safe, S_SIZE + 1)) {
-    exit(0);
+    return -1;
   }
   printf(">> safe: ok\n");
 
   if(safe_unpack(safe, unsafe, U_SIZE + 1)) {
-    exit(0);
+    return -1;
   }
 
   printf(">> unsafe: ok\n");
