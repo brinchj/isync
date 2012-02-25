@@ -28,7 +28,7 @@ _-+=";
 
 #define guard(cond)                               \
   if (!( cond )) {                                \
-    printf("failed: %d\n", __LINE__);             \
+    printf("failed at line %d\n", __LINE__);      \
     return -1;                                    \
   }
 
@@ -160,13 +160,10 @@ int test() {
   if(safe_pack(unsafe, safe, S_SIZE + 1)) {
     return -1;
   }
-  printf(">> safe: ok\n");
 
   if(safe_unpack(safe, unsafe, U_SIZE + 1)) {
     return -1;
   }
-
-  printf(">> unsafe: ok\n");
 
   free(unsafe);
   free(safe);
