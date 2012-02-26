@@ -1481,6 +1481,7 @@ imap_open_store( store_conf_t *conf,
               }
               if(size == 0) {
                 error("authModule failed with no answer!");
+                free(buf);
                 goto bail;
               }
               // check return value
@@ -1488,6 +1489,7 @@ imap_open_store( store_conf_t *conf,
               waitpid(pID, &status, 0);
               if( !WIFEXITED(status) ) {
                 error("authModule exited unexpectedly!");
+                free(buf);
                 goto bail;
               }
               // verify auth data (base64)
@@ -1499,18 +1501,22 @@ imap_open_store( store_conf_t *conf,
                 if ('0' <= c && c <= '9') continue;
                 if ('=' == c || c == '/') continue;
                 error("authModule returned invalid answer: '%c'!\n", c);
+                free(buf);
                 goto bail;
               }
               if(buf[size - 1] != '\n') {
                 error("authModule did not end answer with newline!");
+                free(buf);
                 goto bail;
               }
               // run authentication
               if (imap_exec( ctx, 0, "AUTHENTICATE XOAUTH %s", buf ) != RESP_OK) { // buf ends in newline
                 error( "IMAP error: XOAUTH authentication failed!\n" );
+                free(buf);
                 goto bail;
               } else {
                 // everything went better than expected!
+                free(buf);
                 goto final;
               }
             }
