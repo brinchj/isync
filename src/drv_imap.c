@@ -46,6 +46,7 @@
 #include <ctype.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
+#include <sys/wait.h>
 #ifdef HAVE_SYS_FILIO_H
 # include <sys/filio.h>
 #endif
@@ -1461,9 +1462,10 @@ imap_open_store( store_conf_t *conf,
               dup2(fd[1], fileno(stderr));
               close(fd[1]);
               // execute authmodule to generate oauth token
-              const char **args = { NULL };
+              char *args[] = { NULL };
               execv(srvc->authModule, args);
               fflush(stdout);
+              fflush(stderr);
               exit(0);
             } else {
               // parent

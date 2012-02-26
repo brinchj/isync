@@ -48,55 +48,6 @@
 #include <db.h>
 #endif /* USE_DB */
 
-static void encode_maildir_box(const char* in, char* out, size_t size)
-{
-	const char* p;
-	char c;
-	size_t out_chars;
-
-	for (p = in, out_chars = 0; (c = *p); ++p, ++out, ++out_chars) {
-		assert(out_chars < size);
-		if (c == '/') {
-			assert(out_chars < size - 1);
-			*(out++) = '~';
-			*out = '-';
-			++out_chars;
-		}
-		else if (c == '~') {
-			assert(out_chars < size - 1);
-			*(out++) = '~';
-			*out = '~';
-			++out_chars;
-		}
-		else {
-			*out = c;
-		}
-	}
-	assert(out_chars < size);
-	*out = 0;
-}
-
-static void decode_maildir_box(const char* in, char* out, size_t size)
-{
-	const char* p;
-	char c;
-	size_t out_chars;
-
-	for (p = in, out_chars = 0; (c = *p); ++p, ++out, ++out_chars) {
-		assert(out_chars < size);
-		if (c == '~') {
-			assert(out_chars < size - 1);
-			c = *(++p);
-			*out = (c == '-' ? '/' : '~');
-			++out_chars;
-		}
-		else {
-			*out = c;
-		}
-	}
-	assert(out_chars < size);
-	*out = 0;
-}
 
 typedef struct maildir_store_conf {
 	store_conf_t gen;

@@ -32,7 +32,7 @@ _-+=";
     return -1;                                    \
   }
 
-int safe_pack(char *str, char *out, size_t out_len) {
+int safe_pack(const char *str, char *out, size_t out_len) {
   // escape unsafe chars (strlen(str) <= strlen(out))
   size_t str_len = strlen(str);
 
@@ -80,7 +80,7 @@ int safe_pack(char *str, char *out, size_t out_len) {
   return 0;
 }
 
-int safe_unpack(char *str, char *out, size_t out_len) {
+int safe_unpack(const char *str, char *out, size_t out_len) {
   size_t str_len;
   if (str == NULL || out == NULL) {
     return -1;
@@ -92,7 +92,7 @@ int safe_unpack(char *str, char *out, size_t out_len) {
   for (;;) {
 
     // find next quote char
-    char *end = strchr(str, QUOTE_CHAR);
+    const char *end = strchr(str, QUOTE_CHAR);
     size_t skip;
     if(end != NULL) {
       // get safe prefix length
@@ -149,7 +149,7 @@ int safe_unpack(char *str, char *out, size_t out_len) {
 #define U_SIZE 16             // max size of unsafe string
 #define S_SIZE (U_SIZE * 2)   // max size of safe string
 
-int test() {
+int test(void) {
   char *unsafe = calloc(1, U_SIZE + 1);
   char *safe   = calloc(1, S_SIZE + 1);
   int i, status = 0;
@@ -192,7 +192,7 @@ int test() {
 }
 
 
-int run_test () {
+int run_test (void) {
   srand(time(NULL) + getpid());
   int status = 0;
   while (status == 0) {
