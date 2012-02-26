@@ -1507,7 +1507,7 @@ imap_open_store( store_conf_t *conf,
               }
               // run authentication
               if (imap_exec( ctx, 0, "AUTHENTICATE XOAUTH %s", buf ) != RESP_OK) { // buf ends in newline
-                error( "IMAP error: XOAUTH authentication failed!" );
+                error( "IMAP error: XOAUTH authentication failed!\n" );
                 goto bail;
               } else {
                 // everything went better than expected!
