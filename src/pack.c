@@ -192,7 +192,7 @@ int test() {
 }
 
 
-int main () {
+int run_test () {
   srand(time(NULL) + getpid());
   int status = 0;
   while (status == 0) {
