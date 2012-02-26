@@ -4,12 +4,12 @@
 #include<time.h>
 #include<unistd.h>
 
-char QUOTE_CHAR = '#';
+static const char QUOTE_CHAR = '#';
 
-char *HEX_ALPHA = "0123456789abcdef";
+static const char *HEX_ALPHA = "0123456789abcdef";
 
-char *SAFE_ALPHA = \
-"abcdefghijklmnopqrstuvwxyz\
+static const char *SAFE_ALPHA = "\
+abcdefghijklmnopqrstuvwxyz\
 ABCDEFGHIJKLMNOPQRSTUVWXYZ\
 0123456789\
 _-+=";
@@ -34,12 +34,12 @@ _-+=";
 
 int safe_pack(char *str, char *out, size_t out_len) {
   // escape unsafe chars (strlen(str) <= strlen(out))
-  int str_len = strlen(str);
+  size_t str_len = strlen(str);
 
-  while (1) {
+  for (;;) {
 
     // find next unsafe char
-    int skip = strspn(str, SAFE_ALPHA);
+    size_t skip = strspn(str, SAFE_ALPHA);
     if (skip > 0) {
       // make sure we have space for the safe chars
       guard(skip < out_len);
@@ -50,7 +50,7 @@ int safe_pack(char *str, char *out, size_t out_len) {
     }
 
     // end of str
-    if (*str == 0) {
+    if (*str == '\0') {
       break;
     }
 
@@ -59,10 +59,12 @@ int safe_pack(char *str, char *out, size_t out_len) {
     guard(3 < out_len);
 
     // escape char! (e.g. space becomes: "#20")
-    unsigned char ord = (int) *str;
-    *out       = QUOTE_CHAR;
-    *(out + 1) = HEX_ALPHA[ord / 16];
-    *(out + 2) = HEX_ALPHA[ord % 16];
+    {
+      unsigned char ord = (unsigned char) *str;
+      *out       = QUOTE_CHAR;
+      *(out + 1) = HEX_ALPHA[(int) ord / 16];
+      *(out + 2) = HEX_ALPHA[(int) ord % 16];
+    }
 
     // advance
     forward(1, 3);
@@ -72,24 +74,29 @@ int safe_pack(char *str, char *out, size_t out_len) {
   guard(1 < out_len);
 
   // write terminating 0-byte
-  *out = 0;
+  *out = '\0';
 
   // everything went better than expected!
   return 0;
 }
 
 int safe_unpack(char *str, char *out, size_t out_len) {
-  // unpack escaped chars (strlen(str) >= strlen(out))
-  int str_len = strlen(str);
+  size_t str_len;
+  if (str == NULL || out == NULL) {
+    return -1;
+  }
+  str_len = strlen(str);
 
-  while(1) {
+  // unpack escaped chars (strlen(str) >= strlen(out))
+
+  for (;;) {
 
     // find next quote char
     char *end = strchr(str, QUOTE_CHAR);
     size_t skip;
     if(end != NULL) {
       // get safe prefix length
-      skip = end - str;
+      skip = (size_t) (end - str);
     }
     else {
       // no more quotes, rest is safe
@@ -108,65 +115,88 @@ int safe_unpack(char *str, char *out, size_t out_len) {
     }
 
     // end of str
-    if (*str == 0) {
+    if (*str == '\0') {
       break;
     }
 
     // make sure there is space for char
     guard((3 <= str_len) && (1 < out_len));
 
-    // decode hex (str[0] == '#')
-    int hex0 = hex_index(str[1]);
-    int hex1 = hex_index(str[2]);
+    {
+      // decode hex (str[0] == '#')
+      int hex0 = hex_index(str[1]);
+      int hex1 = hex_index(str[2]);
 
-    // verify hex chars
-    guard(hex0 >= 0 && hex1 >= 0);
-    // set char
-    *out = hex0 * 16 + hex1;
+      // verify hex chars
+      guard((hex0 >= 0) && (hex1 >= 0));
+      // set char
+      *out = (char) (hex0 * 16 + hex1);
 
-    // advance
-    forward(3, 1);
+      // advance
+      forward(3, 1);
+    }
   }
 
   guard(out_len != 0);
 
   // set terminating 0-byte
-  *out = 0;
+  *out = '\0';
 
   return 0;
 }
 
 
-#define U_SIZE 1000           // max size of unsafe string
-#define S_SIZE (U_SIZE * 3)   // max size of safe string
+#define U_SIZE 16             // max size of unsafe string
+#define S_SIZE (U_SIZE * 2)   // max size of safe string
 
 int test() {
   char *unsafe = calloc(1, U_SIZE + 1);
   char *safe   = calloc(1, S_SIZE + 1);
+  int i, status = 0;
+
+  if (unsafe == NULL || safe == NULL) {
+    goto bail;
+  }
 
   // fill unsafe with random non-zero shit
-  srand(time(NULL) + getpid());
-  int i;
   for(i = 0; i < U_SIZE; i++) {
-    if (random() % 2 == 0) {
+    if ((random() % 3) == 0) {
       unsafe[i] = random() % 255 + 1;
     }
     else {
       unsafe[i] = SAFE_ALPHA[random() % strlen(SAFE_ALPHA)];
     }
   }
-  unsafe[U_SIZE + 1] = 0;
+  unsafe[U_SIZE] = '\0';
 
   if(safe_pack(unsafe, safe, S_SIZE + 1)) {
-    return -1;
+    printf("Not enough space for output.\n");
+    status = 2;
+    goto bail;
   }
 
+  printf("%s\n", safe);
   if(safe_unpack(safe, unsafe, U_SIZE + 1)) {
-    return -1;
+    status = -1;
+    goto bail;
   }
 
   free(unsafe);
   free(safe);
-
   return 0;
+
+ bail:
+  free(unsafe);
+  free(safe);
+  return status;
+}
+
+
+int main () {
+  srand(time(NULL) + getpid());
+  int status = 0;
+  while (status == 0) {
+    status = test();
+  }
+  return (status == 2) ? 0 : -1;
 }
