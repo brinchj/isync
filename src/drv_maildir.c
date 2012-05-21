@@ -25,6 +25,8 @@
 #include "isync.h"
 #include "pack.c"
 
+ #include <openssl/sha.h>
+
 #include <assert.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -762,10 +764,28 @@ maildir_prepare_paths( store_t *gctx )
       gctx->path = nfstrdup( ((maildir_store_conf_t *)gctx->conf)->inbox );
 	else {
     // convert IMAP path to something sane for a file path
-    char safe_box[PATH_MAX * 3 + 1];
-    if(safe_pack(gctx->name, safe_box, PATH_MAX * 3 + 1)) {
+    char safe_box[_POSIX_PATH_MAX + 1];
+    if(safe_pack(gctx->name, safe_box, _POSIX_PATH_MAX + 1)) {
       // something went wrong
-      exit(1);
+      safe_box[_POSIX_PATH_MAX] = '\0';
+      char name[] = "_mail1up-sha1_0123456789abcdef";
+      char hex[]  = "0123456789abcdef";
+      printf("Cannot store path: %s\n", safe_box);
+      // compute hash
+      char *digest = calloc(1, 20);
+      SHA_CTX c;
+      SHA1_Init(&c);
+      SHA1_Update(&c, safe_box, strlen(safe_box));
+      SHA1_Final(digest, &c);
+      int i;
+      for(i = 0; i < 8; i++) {
+        int d = (unsigned char) digest[i];
+        name[14 + 2*i    ] = hex[d / 16];
+        name[14 + 2*i + 1] = hex[d % 16];
+      }
+      free(digest);
+      safe_pack(name, safe_box, _POSIX_PATH_MAX + 1);
+      printf("Renaming to: %s\n", safe_box);
     }
     nfasprintf( &gctx->path, "%s%s", gctx->conf->path, safe_box );
   }
