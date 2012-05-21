@@ -15,15 +15,20 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZ\
 _-+=";
 
 
-#define ptr_range(a, b) ( (a == NULL || b == NULL) ? -1 : b - a )
-#define hex_index(c) ( ptr_range(HEX_ALPHA, strchr(HEX_ALPHA, c)) )
+int ptr_range(const char *a, const char *b) {
+  return (a == NULL || b == NULL) ? -1 : b - a;
+}
+
+int hex_index(c) {
+  return ptr_range(HEX_ALPHA, strchr(HEX_ALPHA, c));
+}
 
 #define forward(str_skip, out_skip)                 \
   do {                                              \
-    str     += str_skip;                            \
-    str_len -= str_skip;                            \
-    out     += out_skip;                            \
-    out_len -= out_skip;                            \
+    str     += (str_skip);                          \
+    str_len -= (str_skip);                          \
+    out     += (out_skip);                          \
+    out_len -= (out_skip);                          \
   } while(0)
 
 #define guard(cond)                               \
@@ -33,32 +38,32 @@ _-+=";
   }
 
 int safe_pack(const char *str, char *out, size_t out_len) {
-  // escape unsafe chars (strlen(str) <= strlen(out))
+  /* escape unsafe chars (strlen(str) <= strlen(out)) */
   size_t str_len = strlen(str);
 
   for (;;) {
 
-    // find next unsafe char
+    /* find next unsafe char */
     size_t skip = strspn(str, SAFE_ALPHA);
     if (skip > 0) {
-      // make sure we have space for the safe chars
+      /* make sure we have space for the safe chars */
       guard(skip < out_len);
-      // copy safe chars
+      /* copy safe chars */
       memcpy(out, str, skip);
-      // advance
+      /* advance */
       forward(skip, skip);
     }
 
-    // end of str
+    /* end of str */
     if (*str == '\0') {
       break;
     }
 
-    // we are now at an unsafe char: escape it!
-    // make sure we have space for a quoted char
+    /* we are now at an unsafe char: escape it! */
+    /* make sure we have space for a quoted char */
     guard(3 < out_len);
 
-    // escape char! (e.g. space becomes: "#20")
+    /* escape char! (e.g. space becomes: "#20") */
     {
       unsigned char ord = (unsigned char) *str;
       *out       = QUOTE_CHAR;
@@ -66,17 +71,17 @@ int safe_pack(const char *str, char *out, size_t out_len) {
       *(out + 2) = HEX_ALPHA[(int) ord % 16];
     }
 
-    // advance
+    /* advance */
     forward(1, 3);
   }
 
-  // make sure we have space for the ending 0 byte
+  /* make sure we have space for the ending 0 byte */
   guard(1 < out_len);
 
-  // write terminating 0-byte
+  /* write terminating 0-byte */
   *out = '\0';
 
-  // everything went better than expected!
+  /* everything went better than expected! */
   return 0;
 }
 
@@ -87,67 +92,67 @@ int safe_unpack(const char *str, char *out, size_t out_len) {
   }
   str_len = strlen(str);
 
-  // unpack escaped chars (strlen(str) >= strlen(out))
+  /* unpack escaped chars (strlen(str) >= strlen(out)) */
 
   for (;;) {
 
-    // find next quote char
+    /* find next quote char */
     const char *end = strchr(str, QUOTE_CHAR);
     size_t skip;
     if(end != NULL) {
-      // get safe prefix length
+      /* get safe prefix length */
       skip = (size_t) (end - str);
     }
     else {
-      // no more quotes, rest is safe
+      /* no more quotes, rest is safe */
       skip = strlen(str);
       end = str + skip;
     }
 
     if (skip > 0) {
-      // make sure we have space to copy
+      /* make sure we have space to copy */
       guard(skip < out_len);
 
-      // copy safe chars
+      /* copy safe chars */
       memcpy(out, str, skip);
-      // advance
+      /* advance */
       forward(skip, skip);
     }
 
-    // end of str
+    /* end of str */
     if (*str == '\0') {
       break;
     }
 
-    // make sure there is space for char
+    /* make sure there is space for char */
     guard((3 <= str_len) && (1 < out_len));
 
     {
-      // decode hex (str[0] == '#')
+      /* decode hex (str[0] == '#') */
       int hex0 = hex_index(str[1]);
       int hex1 = hex_index(str[2]);
 
-      // verify hex chars
+      /* verify hex chars */
       guard((hex0 >= 0) && (hex1 >= 0));
-      // set char
+      /* set char */
       *out = (char) (hex0 * 16 + hex1);
 
-      // advance
+      /* advance */
       forward(3, 1);
     }
   }
 
   guard(out_len != 0);
 
-  // set terminating 0-byte
+  /* set terminating 0-byte */
   *out = '\0';
 
   return 0;
 }
 
 
-#define U_SIZE 16             // max size of unsafe string
-#define S_SIZE (U_SIZE * 2)   // max size of safe string
+#define U_SIZE 16             /* max size of unsafe string */
+#define S_SIZE (U_SIZE * 2)   /* max size of safe string */
 
 int test(void) {
   char *unsafe = calloc(1, U_SIZE + 1);
@@ -158,9 +163,9 @@ int test(void) {
     goto bail;
   }
 
-  // fill unsafe with random non-zero shit
+  /* fill unsafe with random non-zero shit */
   for(i = 0; i < U_SIZE; i++) {
-    if ((random() % 3) == 0) {
+    if ((random() % 4) == 1) {
       unsafe[i] = random() % 255 + 1;
     }
     else {
@@ -200,3 +205,8 @@ int run_test (void) {
   }
   return (status == 2) ? 0 : -1;
 }
+
+
+/* void main() { */
+/*   run_test(); */
+/* } */
